@@ -1,12 +1,12 @@
-name: Deploy Hotel FE (Docker, self-hosted)
+name: Deploy admin-fe (Docker, self-hosted)
 
 on:
   push:
     branches: [ master ]
 
 env:
-  APP_NAME: hotel-fe       # Container name
-  IMAGE_NAME: hotel-fe     # Local image name
+  APP_NAME: admin-fe       # Container name
+  IMAGE_NAME: admin-fe     # Local image name
   COMPOSE_FILE: docker-compose.yml
 
 jobs:
