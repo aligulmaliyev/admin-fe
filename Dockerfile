@@ -1,15 +1,23 @@
-# ---- build stage ----
-FROM node:20-alpine AS build
+# 1. Build stage
+FROM node:20 AS build
 WORKDIR /app
+
+# Dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
+
+# Copy source
 COPY . .
+
+# Build
 RUN npm run build
 
-# ---- runtime stage ----
+# 2. Serve stage
 FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
-COPY --from=build /app/dist .
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Nginx config (optional custom domain config)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
