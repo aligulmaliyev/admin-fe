@@ -1,0 +1,9 @@
+services:
+  api:
+    image: hotel-fe:latest
+    container_name: hotel-fe
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env  # Load environment variables from .env file if exists
