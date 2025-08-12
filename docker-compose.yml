@@ -1,7 +1,7 @@
 services:
   api:
-    image: hotel-fe:latest
-    container_name: hotel-fe
+    image: admin-fe:latest
+    container_name: admin-fe
     restart: unless-stopped
     ports:
       - "3000:3000"
