@@ -59,6 +59,7 @@ export default function Login() {
         <CardTitle className="text-2xl">Daxil ol</CardTitle>
         <CardDescription>
           Otel idarəetmə panelinə daxil olmaq üçün məlumatlarınızı daxil edin
+          hello
         </CardDescription>
       </CardHeader>
       <CardContent>
