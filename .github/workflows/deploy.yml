@@ -67,9 +67,21 @@ jobs:
           docker system prune -f
       
       - name: Publish Nginx vhost & reload edge
+        shell: bash
         run: |
+          set -euo pipefail
+
+          # Dinamik qovluğu yarat + faylı kopyala (sudo lazımdırsa saxla, yoxdursa sil)
           sudo mkdir -p /srv/qr-inn/nginx-dynamic
-          sudo cp ${{ github.workspace }}/deploy/nginx/conf.d/admin.conf /srv/qr-inn/nginx-dynamic/admin.conf
-          docker exec -it qrinn-nginx nginx -t
-          docker exec qrinn-nginx nginx -s reload
+          sudo install -m 644 -D "$GITHUB_WORKSPACE/deploy/nginx/conf.d/admin.conf" \
+            /srv/qr-inn/nginx-dynamic/admin.conf
+
+          # qrinn-nginx varsa syntax test + reload (TTY YOX, -it istifadə ETMƏ)
+          if docker ps --format '{{.Names}}' | grep -Fxq 'qrinn-nginx'; then
+            docker exec qrinn-nginx nginx -t
+            docker exec qrinn-nginx nginx -s reload
+          else
+            echo "WARNING: qrinn-nginx is not running on this host; skipping reload"
+          fi
+
 
