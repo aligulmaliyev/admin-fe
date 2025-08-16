@@ -1,43 +1,64 @@
-name: Deploy admin-fe (Docker, self-hosted)
+name: Build & Deploy (Frontend, Docker, self-hosted)
 
 on:
   push:
-    branches: [ master ]
+    branches: [develop, master]
 
 env:
-  APP_NAME: admin-fe       # Container name
-  IMAGE_NAME: admin-fe     # Local image name
-  COMPOSE_FILE: docker-compose.yml
+  IMAGE: ghcr.io/${{ github.repository_owner }}/admin-frontend
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: self-hosted
-    timeout-minutes: 30
-    
     steps:
-      # Checkout the latest code from the repository
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
 
-      # (Optional) Set up Buildx for faster builds and layer caching
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Build Docker image with two tags: commit SHA and latest
-      - name: Build Docker image
+      - name: Select env file for build
         run: |
-          docker build \
-            --pull \
-            -t $IMAGE_NAME:${GITHUB_SHA} \
-            -t $IMAGE_NAME:latest \
-            .
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then
+            cp .env.test .env
+          else
+            cp .env.prod .env
+          fi
+          ls -l .env
 
-      # Deploy using Docker Compose
-      - name: Deploy with Docker Compose
+      - name: Build & Push image (tag by branch)
         run: |
-          # Stop and remove existing containers if running
-          docker compose -f $COMPOSE_FILE down || true
-          # Start with the newly built image
-          docker compose -f $COMPOSE_FILE up -d --force-recreate
-          # Remove unused images to save space
-          docker image prune -f
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then TAG=test; else TAG=prod; fi
+          docker build -t $IMAGE:$TAG -t $IMAGE:${GITHUB_SHA} .
+          docker push $IMAGE:$TAG
+          docker push $IMAGE:${GITHUB_SHA}
+
+  deploy:
+    needs: build-and-push
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login GHCR (pull needs auth)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Compose up (only current env)
+        working-directory: ${{ github.workspace }}/deploy
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/admin-frontend
+        run: |
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then
+            PROF=test
+            SVC=admin-fe-test
+          else
+            PROF=prod
+            SVC=admin-fe-prod
+          fi
+
+          docker compose --profile $PROF pull $SVC || true
+          docker compose --profile $PROF up -d $SVC nginx certbot
+          docker system prune -f
