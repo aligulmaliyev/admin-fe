@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Users as UsersIcon,
   Search,
@@ -143,9 +143,9 @@ export default function Users() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage
+                        {/* <AvatarImage
                           src={`/placeholder.svg?height=32&width=32`}
-                        />
+                        /> */}
                         <AvatarFallback>
                           {getInitials(user.name)}
                         </AvatarFallback>

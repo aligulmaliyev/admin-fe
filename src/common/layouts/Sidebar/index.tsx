@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { navigation } from "@/constants/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -30,11 +30,10 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`}
+                }`}
               onClick={() => mobile && setSidebarOpen(false)}
             >
               <item.icon className="h-5 w-5" />
@@ -47,7 +46,7 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
       <div className="border-t pt-4">
         <div className="flex items-center gap-3 px-3 py-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg?height=32&width=32" />
+            {/* <AvatarImage src="/placeholder.svg?height=32&width=32" /> */}
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
