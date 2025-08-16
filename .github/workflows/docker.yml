@@ -1,0 +1,48 @@
+name: Build & Deploy (Frontend)
+
+on:
+  push:
+    branches: [ develop, master ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: |
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then
+            cp .env.test .env
+          else
+            cp .env.prod .env
+          fi
+          npm run build
+
+      - name: Build Docker image
+        run: |
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then TAG=test; else TAG=prod; fi
+          docker build -t ghcr.io/${{ github.repository_owner }}/admin-frontend:$TAG .
+          docker push ghcr.io/${{ github.repository_owner }}/admin-frontend:$TAG
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull & Restart
+        working-directory: ${{ github.workspace }}/deploy
+        run: |
+          docker compose pull
+          docker compose up -d
