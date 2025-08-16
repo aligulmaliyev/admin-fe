@@ -18,15 +18,11 @@ services:
   admin-fe-test:
     image: ghcr.io/aligulmaliyev/admin-frontend:test
     container_name: admin-fe-test
-    ports:
-      - "3001:80"
     restart: unless-stopped
 
   admin-fe-prod:
     image: ghcr.io/aligulmaliyev/admin-frontend:prod
     container_name: admin-fe-prod
-    ports:
-      - "3002:80"
     restart: unless-stopped
 
   certbot:
