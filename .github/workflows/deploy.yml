@@ -65,3 +65,11 @@ jobs:
           docker compose pull $SVC || true
           docker compose up -d $SVC
           docker system prune -f
+      
+      - name: Publish Nginx vhost & reload edge
+        run: |
+          sudo mkdir -p /srv/qr-inn/nginx-dynamic
+          sudo cp ${{ github.workspace }}/deploy/nginx/conf.d/admin.conf /srv/qr-inn/nginx-dynamic/admin.conf
+          docker exec -it qrinn-nginx nginx -t
+          docker exec qrinn-nginx nginx -s reload
+
