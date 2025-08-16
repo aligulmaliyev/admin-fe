@@ -1,14 +1,16 @@
 # Build stage
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --frozen-lockfile
+RUN npm ci
 COPY . .
 RUN npm run build
 
-# Production stage
+# Runtime: static nginx
 FROM nginx:1.27-alpine
+# SPA faylları
 COPY --from=build /app/dist /usr/share/nginx/html
+# Nginx SPA config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
