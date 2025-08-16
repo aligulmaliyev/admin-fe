@@ -46,14 +46,19 @@ jobs:
       - name: Login GHCR (pull needs auth)
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Pull images (by branch tag)
-        run: |
-          if [ "${GITHUB_REF##*/}" = "develop" ]; then TAG=test; else TAG=prod; fi
-          docker pull $IMAGE:$TAG || true
-
-      - name: Compose up (from repo deploy/)
+      - name: Compose up (only current env)
         working-directory: ${{ github.workspace }}/deploy
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/admin-frontend
         run: |
-          docker compose pull || true
-          docker compose up -d
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then
+            PROF=test
+            SVC=admin-fe-test
+          else
+            PROF=prod
+            SVC=admin-fe-prod
+          fi
+
+          docker compose --profile $PROF pull $SVC || true
+          docker compose --profile $PROF up -d $SVC nginx certbot
           docker system prune -f
