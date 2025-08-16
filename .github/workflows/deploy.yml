@@ -23,17 +23,12 @@ jobs:
 
       - name: Select env file for build
         run: |
-          if [ "${GITHUB_REF##*/}" = "develop" ]; then
-            cp .env.test .env
-          else
-            cp .env.prod .env
-          fi
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then cp .env.test .env; else cp .env.prod .env; fi
           ls -l .env
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        with: { node-version: 20 }
 
       - name: Enable corepack
         run: corepack enable
@@ -60,19 +55,13 @@ jobs:
       - name: Login GHCR (pull needs auth)
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Ensure network
+        run: docker network create qrinn_net || true
+
       - name: Compose up (only current env)
         working-directory: ${{ github.workspace }}/deploy
-        env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/admin-frontend
         run: |
-          if [ "${GITHUB_REF##*/}" = "develop" ]; then
-            PROF=test
-            SVC=admin-fe-test
-          else
-            PROF=prod
-            SVC=admin-fe-prod
-          fi
-
-          docker compose --profile $PROF pull $SVC || true
-          docker compose --profile $PROF up -d $SVC nginx certbot
+          if [ "${GITHUB_REF##*/}" = "develop" ]; then SVC=admin-fe-test; else SVC=admin-fe-prod; fi
+          docker compose pull $SVC || true
+          docker compose up -d $SVC
           docker system prune -f
