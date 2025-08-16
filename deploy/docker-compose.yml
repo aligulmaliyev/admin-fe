@@ -1,20 +1,18 @@
-networks:
-  qrinn_net:
-    external: true
-
 services:
   admin-fe-prod:
     image: ghcr.io/aligulmaliyev/admin-frontend:prod
     container_name: admin-fe-prod
-    expose:
-      - "80"
+    expose: ["80"]         
     restart: unless-stopped
     networks: [qrinn_net]
 
   admin-fe-test:
     image: ghcr.io/aligulmaliyev/admin-frontend:test
     container_name: admin-fe-test
-    expose:
-      - "80"
+    expose: ["80"]
     restart: unless-stopped
     networks: [qrinn_net]
+
+networks:
+  qrinn_net:
+    external: true
