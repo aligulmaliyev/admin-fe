@@ -30,6 +30,20 @@ jobs:
           fi
           ls -l .env
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
       - name: Build & Push image (tag by branch)
         run: |
           if [ "${GITHUB_REF##*/}" = "develop" ]; then TAG=test; else TAG=prod; fi
