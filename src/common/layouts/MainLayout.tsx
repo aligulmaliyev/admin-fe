@@ -5,9 +5,11 @@ import { Menu } from "lucide-react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Outlet } from "react-router";
 import { Sidebar } from "./Sidebar";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <ProtectedRoute>
@@ -44,7 +46,7 @@ export default function MainLayout() {
 
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">
-                  Xoş gəlmisiniz, Admin!
+                  Xoş gəlmisiniz, {user?.name}!
                 </span>
               </div>
             </div>

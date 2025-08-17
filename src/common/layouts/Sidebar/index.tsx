@@ -1,8 +1,8 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { navigation } from "@/constants/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { Hotel, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 type SidebarProps = {
@@ -16,11 +16,8 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
 
   return (
     <div className={`flex flex-col h-full ${mobile ? "p-4" : "p-6"}`}>
-      <div className="flex items-center gap-2 mb-8">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <Hotel className="h-6 w-6 text-blue-600" />
-        </div>
-        <span className="text-xl font-bold">Otel Admin</span>
+      <div className="flex items-center self-center gap-2 mb-6">
+        <img src="/qr_inn_logo.png" width={80} />
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -31,7 +28,7 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
               key={item.name}
               to={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-[#DFF5E7] text-[#3E8656]"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`}
               onClick={() => mobile && setSidebarOpen(false)}
@@ -46,14 +43,14 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
       <div className="border-t pt-4">
         <div className="flex items-center gap-3 px-3 py-2">
           <Avatar className="h-8 w-8">
-            {/* <AvatarImage src="/placeholder.svg?height=32&width=32" /> */}
-            <AvatarFallback>AD</AvatarFallback>
+            <AvatarImage src="/placeholder.svg?height=32&width=32" />
+            <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
               {user?.name}
             </p>
-            <p className="text-xs text-gray-500 truncate">{user?.username}</p>
+            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
         </div>
         <Button

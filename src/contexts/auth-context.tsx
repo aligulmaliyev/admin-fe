@@ -7,9 +7,10 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Statuses } from "@/constants/statuses";
 
-interface User {
+interface IUser {
   id: number;
   username: string;
+  email: string;
   name: string;
   accountStatus: keyof typeof Statuses;
   roles: string[];
@@ -17,7 +18,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -26,29 +27,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<IUser | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = localStorage.getItem("user") || null;
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-    setIsLoading(false);
-  }, []);
-
   const login = async (
-    username: string,
+    email: string,
     password: string
   ): Promise<boolean> => {
     try {
+      setIsLoading(true)
       const response = await axios.post(`${BASE_URL}${endpoints.auth.login}`, {
-        username,
+        email,
         password,
       });
 
-      console.log(response);
       if (!response.data) return false;
 
       const { user, access_token } = response.data;
@@ -61,6 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Login failed:", error);
       return false;
     }
+    finally {
+      setIsLoading(false)
+    }
   };
 
   const logout = () => {
@@ -69,6 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("user");
     navigate("/auth/login");
   };
+
+    useEffect(() => {
+    const user = localStorage.getItem("user") || null;
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+    setIsLoading(false)
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

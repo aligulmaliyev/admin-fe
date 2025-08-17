@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { IHotelRequest } from "@/models/hotel";
 import { useHotelsStore } from "@/store/useHotelsStore";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,87 +19,121 @@ import { manageHotelSchema } from "@/common/schemas/manageHotelSchema";
 
 type TManageHotelModalProps = {
   mode: "create" | "edit";
-  id?: number | null;
+  id?: number;
   isManageDialogOpen: boolean;
   setIsManageDialogOpen: (isOpen: boolean) => void;
 };
+
+const AZE_PREFIX = "+994";
+
+const stripAzePrefix = (phone?: string) => {
+  if (!phone) return "";
+  return phone.startsWith(AZE_PREFIX)
+    ? phone.slice(AZE_PREFIX.length).trim()
+    : phone.trim();
+};
+
+const ensureAzePrefix = (raw?: string) => {
+  const v = (raw ?? "").trim();
+  if (!v) return "";
+  return v.startsWith(AZE_PREFIX) ? v : `${AZE_PREFIX}${v}`;
+};
+
+
 const ManageHotelModal = ({
   mode,
   id,
   isManageDialogOpen,
   setIsManageDialogOpen,
 }: TManageHotelModalProps) => {
+  const isEdit = mode === "edit";
+
+
   const { createHotel, updateHotel, fetchHotelById } = useHotelsStore();
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<IHotelRequest>({
     resolver: zodResolver(manageHotelSchema),
+    defaultValues: {
+      name: "",
+      legalName: "",
+      country: "",
+      city: "",
+      address: "",
+      phone: "",
+      email: "",
+    },
+
   });
 
-  const handleManageHotel = async (data: IHotelRequest) => {
-    const newHotel: IHotelRequest = {
-      name: data.name,
-      legalName: data.legalName,
-      country: data.country,
-      city: data.city,
-      address: data.address,
-      phone: data.phone,
-      email: data.email,
-    };
-    if (mode === "edit" && id) {
-      const success = await updateHotel(id, newHotel);
-      if (success) {
-        setIsManageDialogOpen(false);
-      }
-      return;
-    } else if (mode === "create") {
-      const success = await createHotel(newHotel);
-      if (success) {
-        setIsManageDialogOpen(false);
-      }
-    }
-  };
+  const loadHotel = useCallback(async () => {
+    if (!isEdit || !id) return;
 
-  const fetchSingleHotel = async () => {
-    if (mode === "edit" && id) {
-      const hotelData = await fetchHotelById(id);
-      if (hotelData) {
-        const number = hotelData.phone.replace("+994", "").trim();
-        setValue("name", hotelData.name);
-        setValue("legalName", hotelData.legalName);
-        setValue("country", hotelData.country);
-        setValue("city", hotelData.city);
-        setValue("address", hotelData.address);
-        setValue("phone", number);
-        setValue("email", hotelData.email);
+    try {
+      const hotel = await fetchHotelById(id);
+      if (!hotel) return;
+
+      reset({
+        name: hotel.name ?? "",
+        legalName: hotel.legalName ?? "",
+        country: hotel.country ?? "",
+        city: hotel.city ?? "",
+        address: hotel.address ?? "",
+        phone: stripAzePrefix(hotel.phone),
+        email: hotel.email ?? "",
+      });
+    } catch (e) {
+      console.error("Failed to fetch hotel:", e);
+    }
+  }, [fetchHotelById, id, isEdit, reset]);
+
+  const onSubmit = async (data: IHotelRequest) => {
+    const payload: IHotelRequest = {
+      ...data,
+      phone: ensureAzePrefix(data.phone),
+    };
+
+    try {
+      let success = false;
+
+      if (isEdit && id) {
+        success = await updateHotel(id, payload);
+      } else {
+        success = await createHotel(payload);
       }
+
+      if (success) setIsManageDialogOpen(false);
+    } catch (e) {
+      console.error("Manage hotel failed:", e);
     }
   };
 
   useEffect(() => {
-    if (isManageDialogOpen) {
-      if (mode === "edit" && id) {
-        fetchSingleHotel();
-      } else if (mode === "create") {
-        reset();
-      }
+    if (isEdit) {
+      loadHotel();
+    } else {
+      reset();
     }
-  }, [isManageDialogOpen]);
-  
+  }, [isEdit]);
+
+  const title = isEdit ? "Oteli Yenilə" : "Yeni Otel Yarat";
+  const description = isEdit
+    ? "Otel məlumatlarını yeniləmək üçün aşağıdakı sahələri düzəldin."
+    : "Yeni otel əlavə etmək üçün aşağıdakı məlumatları doldurun.";
+
   return (
     <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Yeni Otel Yarat</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Yeni otel əlavə etmək üçün aşağıdakı məlumatları doldurun
+           {description}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(handleManageHotel)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Otel Adı *</Label>
