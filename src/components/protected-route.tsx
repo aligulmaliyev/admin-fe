@@ -18,7 +18,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4EA36C] border-t-transparent"></div>
           <p className="mt-2 text-gray-600">Yüklənir...</p>
         </div>
       </div>
