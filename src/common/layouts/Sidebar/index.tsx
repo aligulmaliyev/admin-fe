@@ -17,7 +17,7 @@ export const Sidebar = ({ mobile = false, setSidebarOpen }: SidebarProps) => {
   return (
     <div className={`flex flex-col h-full ${mobile ? "p-4" : "p-6"}`}>
       <div className="flex items-center self-center gap-2 mb-6">
-        <img src="/qr_inn_logo.png" width={80} />
+        <img src="/qr_inn_logo.png" width={70} />
       </div>
 
       <nav className="flex-1 space-y-2">
