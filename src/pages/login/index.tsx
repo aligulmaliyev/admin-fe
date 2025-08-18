@@ -63,8 +63,8 @@ export default function Login() {
   return (
     <Card className="w-full">
       <CardHeader className="text-center">
-        <div className="mb-5 flex justify-center">
-          <img src="/qr_inn_logo.png" width={100} alt="QR Inn loqo" />
+        <div className="mb-5 flex justify-center mt-3">
+          <img src="/qr_inn_logo.png" width={70} alt="QR Inn loqo" />
         </div>
         <CardTitle className="text-2xl">Daxil ol</CardTitle>
         <CardDescription>
