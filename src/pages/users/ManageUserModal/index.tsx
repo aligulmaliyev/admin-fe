@@ -23,8 +23,9 @@ import { Statuses } from "@/constants/statuses";
 import { useHotelsStore } from "@/store/useHotelsStore";
 import { useUsersStore } from "@/store/useUsersStore";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type TManageUserModalProps = {
@@ -61,6 +62,8 @@ export const ManageUserModal = ({
 
   const { hotels, fetchHotels } = useHotelsStore();
   const { createUser, updateUser, fetchUserById } = useUsersStore();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const loadUser = useCallback(async () => {
     if (!isEdit || !id) return;
@@ -163,12 +166,31 @@ export const ManageUserModal = ({
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Şifrə *</Label>
-              <Input
-                readOnly={mode == "edit"}
-                type="password"
-                {...register("password")}
-                placeholder="Şifrəni daxil edin"
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  readOnly={mode == "edit"}
+                  {...register("password")}
+                  placeholder="Şifrəni daxil edin"
+                  required
+                  className="w-full pr-10"
+                />
+                {
+                  mode == 'create' && <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
+                }
+              </div>
               {errors.password && (
                 <p className="text-sm text-red-500">
                   {errors.password.message}
