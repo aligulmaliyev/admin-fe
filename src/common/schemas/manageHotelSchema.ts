@@ -47,4 +47,6 @@ export const manageHotelSchema = z.object({
     .string()
     .email("E-mail düzgün deyil")
     .nonempty("E-mail tələb olunur"),
+
+   isOrderable: z.boolean().default(false),
 });
