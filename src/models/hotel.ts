@@ -9,6 +9,7 @@ export interface IHotelResponse {
   email: string;
   status: string;
   createdAt: string;
+  isOrderable: boolean;
 }
 
 export interface IHotelRequest {
@@ -20,4 +21,5 @@ export interface IHotelRequest {
   address: string;
   phone: string;
   email: string;
+  isOrderable?: boolean;
 }

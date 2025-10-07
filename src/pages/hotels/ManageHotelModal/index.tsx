@@ -12,10 +12,11 @@ import { Label } from "@/components/ui/label";
 import type { IHotelRequest } from "@/models/hotel";
 import { useHotelsStore } from "@/store/useHotelsStore";
 import { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { manageHotelSchema } from "@/common/schemas/manageHotelSchema";
+import {SelectTrigger, SelectValue , Select, SelectContent, SelectItem } from "@/components/ui/select";
 
 type TManageHotelModalProps = {
   mode: "create" | "edit";
@@ -51,6 +52,7 @@ const ManageHotelModal = ({
 
   const { createHotel, updateHotel, fetchHotelById } = useHotelsStore();
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -75,7 +77,6 @@ const ManageHotelModal = ({
     try {
       const hotel = await fetchHotelById(id);
       if (!hotel) return;
-
       reset({
         name: hotel.name ?? "",
         legalName: hotel.legalName ?? "",
@@ -84,6 +85,7 @@ const ManageHotelModal = ({
         address: hotel.address ?? "",
         phone: stripAzePrefix(hotel.phone),
         email: hotel.email ?? "",
+        isOrderable: `${hotel.isOrderable}` as unknown as boolean,
       });
     } catch (e) {
       console.error("Failed to fetch hotel:", e);
@@ -130,7 +132,7 @@ const ManageHotelModal = ({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-           {description}
+            {description}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -210,6 +212,36 @@ const ManageHotelModal = ({
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="isOrderable">Şirkətin növü</Label>
+              <Controller
+                name="isOrderable"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange(value === "true" ? true : false)
+                    }
+                    value={field.value === true ? "true" : "false"}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Status seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={'true'}>Hotel</SelectItem>
+                      <SelectItem value={'false'}>
+                        Restoran
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.isOrderable && (
+                <p className="text-sm text-red-500">
+                  {errors.isOrderable.message}
+                </p>
               )}
             </div>
           </div>
